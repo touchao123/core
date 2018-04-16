@@ -286,11 +286,11 @@ class SyncBackend extends Command {
 	}
 
 	/**
-	 * @param array $uidToAccountMap a list of uids to the the action
+	 * @param array $uidToAccountMap a list of uids to account objects
 	 * @param callable $callbackExists the callback used if the account for the uid exists. The
 	 * uid and the specific account will be passed as parameter to the callback in that order
-	 * @param callable $callbackMissing the callback used if the account doesn't exists. The uid (not
-	 * the account) will be passed as parameter to the callback
+	 * @param callable $callbackMissing the callback used if the account doesn't exists.
+	 * The uid and account are passed as parameters to the callback
 	 */
 	private function doActionForAccountUids(array $uidToAccountMap, callable $callbackExists, callable $callbackMissing = null) {
 		foreach ($uidToAccountMap as $uid => $account) {
@@ -315,7 +315,7 @@ class SyncBackend extends Command {
 		} else {
 
 			// define some actions to be used
-			$enableAction = function ($uid, IUser $user) use ($output) {
+			$disableAction = function ($uid, IUser $user) use ($output) {
 				if ($user->isEnabled()) {
 					$user->setEnabled(false);
 					$output->writeln("$uid, {$user->getDisplayName()}, {$user->getEMailAddress()} disabled");
@@ -336,7 +336,7 @@ class SyncBackend extends Command {
 					$output->writeln('Disabling accounts:');
 					$this->doActionForAccountUids(
 						$removedUsers,
-						$enableAction,
+						$disableAction,
 						$writeNotExisting
 					);
 					break;
@@ -371,7 +371,7 @@ class SyncBackend extends Command {
 							$output->writeln('Disabling accounts');
 							$this->doActionForAccountUids(
 								$removedUsers,
-								$enableAction,
+								$disableAction,
 								$writeNotExisting
 							);
 							break;
@@ -391,7 +391,7 @@ class SyncBackend extends Command {
 
 	/**
 	 * Re-enable disabled accounts
-	 * @param array $reappearedUsers
+	 * @param array $reappearedUsers map of uids to account objects
 	 * @param OutputInterface $output
 	 */
 	private function reEnableUsers(array $reappearedUsers, OutputInterface $output) {

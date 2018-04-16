@@ -221,4 +221,13 @@ class SyncServiceTest extends TestCase {
 		$s = new SyncService($this->config, $this->logger, $this->mapper);
 		static::invokePrivate($s, 'syncQuota', [$a, $backend]);
 	}
+
+	public function testAnalyseExistingUsers() {
+		$s = new SyncService($this->config, $this->logger, $this->mapper);
+		$backend = $this->createMock(UserInterface::class);
+		$result = $s->analyzeExistingUsers($backend, function() {});
+		$this->assertInternalType('array', $result);
+		$this->assertCount(2, $result);
+	}
+
 }
