@@ -224,10 +224,54 @@ class SyncServiceTest extends TestCase {
 
 	public function testAnalyseExistingUsers() {
 		$s = new SyncService($this->config, $this->logger, $this->mapper);
+		$this->mapper->expects($this->once())
+			->method('callForAllUsers')
+			->with($this->callback(function($param) {
+				return \is_callable($param);
+			}));
 		$backend = $this->createMock(UserInterface::class);
 		$result = $s->analyzeExistingUsers($backend, function() {});
 		$this->assertInternalType('array', $result);
 		$this->assertCount(2, $result);
+	}
+
+	/**
+	 * Check accounts are detected if the reappear on the backend
+	 */
+	public function testReAppearingAccountsAreDetected() {
+		$account = $this->getMockBuilder(Account::class)->setMethods(['getBackend', 'getState', 'getUserId'])->getMock();
+		$backendClass = 'BackendClass';
+		$account->expects($this->once())->method('getBackend')->willReturn($backendClass);
+		$backend = $this->createMock(UserInterface::class);
+		// The user appears on the backend
+		$backend->expects($this->once())->method('userExists')->willReturn(true);
+		$account->expects($this->once())->method('getState')->willReturn(false);
+		$account->expects($this->exactly(2))->method('getUserId')->willReturn('test');
+		$s = new SyncService($this->config, $this->logger, $this->mapper);
+		$response = static::invokePrivate($s, 'checkIfAccountReappeared', [$account, $backend, $backendClass]);
+		$this->assertInternalType('array', $response);
+		$this->assertCount(0, $response[0]);
+		$this->assertCount(1, $response[1]);
+
+	}
+
+	/**
+	 * Check accounts are detected if the disappear from the backend
+	 */
+	public function testRemovedAccountsAreDetected() {
+		$account = $this->getMockBuilder(Account::class)->setMethods(['getBackend', 'getState', 'getUserId'])->getMock();
+		$backendClass = 'BackendClass';
+		$account->expects($this->once())->method('getBackend')->willReturn($backendClass);
+		$backend = $this->createMock(UserInterface::class);
+		// The user has been removed
+		$backend->expects($this->once())->method('userExists')->willReturn(false);
+		$account->expects($this->never())->method('getState')->willReturn(false);
+		$account->expects($this->exactly(2))->method('getUserId')->willReturn('test');
+		$s = new SyncService($this->config, $this->logger, $this->mapper);
+		$response = static::invokePrivate($s, 'checkIfAccountReappeared', [$account, $backend, $backendClass]);
+		$this->assertInternalType('array', $response);
+		$this->assertCount(1, $response[0]);
+		$this->assertCount(0, $response[1]);
 	}
 
 }
