@@ -313,10 +313,6 @@ class View {
 		}
 	}
 
-	public function isCacheUpdateEnabled() {
-		return $this->updaterEnabled;
-	}
-
 	public function disableCacheUpdate() {
 		$this->updaterEnabled = false;
 	}
