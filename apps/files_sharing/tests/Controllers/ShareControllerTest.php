@@ -40,6 +40,8 @@ use OCP\IURLGenerator;
 use OCP\IUserManager;
 use OCP\Security\ISecureRandom;
 use OCP\Share\Exceptions\ShareNotFound;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
  * @group DB
@@ -69,8 +71,8 @@ class ShareControllerTest extends \Test\TestCase {
 	private $shareManager;
 	/** @var IUserManager | \PHPUnit_Framework_MockObject_MockObject */
 	private $userManager;
-	/** @var  FederatedShareProvider | \PHPUnit_Framework_MockObject_MockObject */
-	private $federatedShareProvider;
+	/** @var EventDispatcherInterface | \PHPUnit_Framework_MockObject_MockObject */
+	private $eventDispatcher;
 
 	protected function setUp() {
 		parent::setUp();
@@ -82,12 +84,7 @@ class ShareControllerTest extends \Test\TestCase {
 		$this->previewManager = $this->createMock('\OCP\IPreview');
 		$this->config = $this->createMock('\OCP\IConfig');
 		$this->userManager = $this->createMock('\OCP\IUserManager');
-		$this->federatedShareProvider = $this->getMockBuilder('OCA\FederatedFileSharing\FederatedShareProvider')
-			->disableOriginalConstructor()->getMock();
-		$this->federatedShareProvider->expects($this->any())
-			->method('isOutgoingServer2serverShareEnabled')->willReturn(true);
-		$this->federatedShareProvider->expects($this->any())
-			->method('isIncomingServer2serverShareEnabled')->willReturn(true);
+		$this->eventDispatcher = new EventDispatcher();
 
 		$this->shareController = new \OCA\Files_Sharing\Controllers\ShareController(
 			$this->appName,
@@ -101,7 +98,7 @@ class ShareControllerTest extends \Test\TestCase {
 			$this->session,
 			$this->previewManager,
 			$this->createMock('\OCP\Files\IRootFolder'),
-			$this->federatedShareProvider
+			$this->eventDispatcher
 		);
 
 		// Store current user
@@ -353,6 +350,11 @@ class ShareControllerTest extends \Test\TestCase {
 
 		$this->userManager->method('get')->with('ownerUID')->willReturn($owner);
 
+		$loadAdditionalScriptsCalled = false;
+		$this->eventDispatcher->addListener('OCA\Files_Sharing::loadAdditionalScripts', function () use (&$loadAdditionalScriptsCalled) {
+			$loadAdditionalScriptsCalled = true;
+		});
+
 		$response = $this->shareController->showShare('token');
 		$sharedTmplParams = [
 			'displayName' => 'ownerDisplay',
@@ -383,6 +385,8 @@ class ShareControllerTest extends \Test\TestCase {
 		$expectedResponse->setContentSecurityPolicy($csp);
 
 		$this->assertEquals($expectedResponse, $response);
+
+		$this->assertTrue($loadAdditionalScriptsCalled, 'Hook for loading additional scripts was called');
 	}
 
 	/**

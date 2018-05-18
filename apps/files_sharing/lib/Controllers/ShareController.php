@@ -53,6 +53,7 @@ use OCP\IUserManager;
 use OCP\Share;
 use OCP\Share\Exceptions\ShareNotFound;
 use OCP\Template;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Class ShareController
@@ -79,6 +80,8 @@ class ShareController extends Controller {
 	protected $previewManager;
 	/** @var IRootFolder */
 	protected $rootFolder;
+	/** @var EventDispatcherInterface */
+	protected $eventDispatcher;
 
 	/**
 	 * @param string $appName
@@ -92,6 +95,7 @@ class ShareController extends Controller {
 	 * @param ISession $session
 	 * @param IPreview $previewManager
 	 * @param IRootFolder $rootFolder
+	 * @param EventDispatcherInterface $eventDispatcher
 	 */
 	public function __construct($appName,
 								IRequest $request,
@@ -103,7 +107,9 @@ class ShareController extends Controller {
 								\OCP\Share\IManager $shareManager,
 								ISession $session,
 								IPreview $previewManager,
-								IRootFolder $rootFolder) {
+								IRootFolder $rootFolder,
+								EventDispatcherInterface $eventDispatcher
+	) {
 		parent::__construct($appName, $request);
 
 		$this->config = $config;
@@ -115,6 +121,7 @@ class ShareController extends Controller {
 		$this->session = $session;
 		$this->previewManager = $previewManager;
 		$this->rootFolder = $rootFolder;
+		$this->eventDispatcher = $eventDispatcher;
 	}
 
 	/**
@@ -239,6 +246,8 @@ class ShareController extends Controller {
 	}
 
 	/**
+	 * Renders and displays the public link page template
+	 *
 	 * @PublicPage
 	 * @NoCSRFRequired
 	 *
@@ -353,6 +362,8 @@ class ShareController extends Controller {
 		} else {
 			$shareTmpl['previewImage'] = $this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('core', 'favicon-fb.png'));
 		}
+
+		$this->eventDispatcher->dispatch('OCA\Files_Sharing::loadAdditionalScripts');
 
 		$csp = new OCP\AppFramework\Http\ContentSecurityPolicy();
 		$csp->addAllowedFrameDomain('\'self\'');
