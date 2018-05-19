@@ -489,4 +489,14 @@ class ObjectStoreStorage extends \OC\Files\Storage\Common {
 		}
 		return parent::restoreVersion($internalPath, $versionId);
 	}
+
+	public function getCache($path = '', $storage = null) {
+		if (!$storage) {
+			$storage = $this;
+		}
+		if ($storage && !isset($storage->cache)) {
+			$storage->cache = new ObjectStoreMetadata($storage);
+		}
+		return $storage->cache;
+	}
 }
