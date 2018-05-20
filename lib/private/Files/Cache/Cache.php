@@ -805,33 +805,6 @@ class Cache implements ICache {
 	}
 
 	/**
-	 * get the storage id of the storage for a file and the internal path of the file
-	 * unlike getPathById this does not limit the search to files on this storage and
-	 * instead does a global search in the cache table
-	 *
-	 * @param int $id
-	 * @deprecated use getPathById() instead
-	 * @return array first element holding the storage id, second the path
-	 */
-	public static function getById($id) {
-		$connection = \OC::$server->getDatabaseConnection();
-		$sql = 'SELECT `storage`, `path` FROM `*PREFIX*filecache` WHERE `fileid` = ?';
-		$result = $connection->executeQuery($sql, [$id]);
-		if ($row = $result->fetch()) {
-			$numericId = $row['storage'];
-			$path = $row['path'];
-		} else {
-			return null;
-		}
-
-		if ($id = Storage::getStorageId($numericId)) {
-			return [$id, $path];
-		} else {
-			return null;
-		}
-	}
-
-	/**
 	 * normalize the given path
 	 *
 	 * @param string $path
