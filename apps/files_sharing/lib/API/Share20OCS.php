@@ -39,6 +39,7 @@ use OCP\Share\IManager;
 use OCP\Share\IShare;
 use OCA\Files_Sharing\Service\NotificationPublisher;
 use OCA\Files_Sharing\Helper;
+use OCA\Files_Sharing\SharingBlacklist;
 
 /**
  * Class Share20OCS
@@ -67,6 +68,8 @@ class Share20OCS {
 	private $config;
 	/** @var NotificationPublisher */
 	private $notificationPublisher;
+	/** @var SharingBlacklist */
+	private $sharingBlacklist;
 
 	/**
 	 * @var string
@@ -97,7 +100,8 @@ class Share20OCS {
 			IUser $currentUser,
 			IL10N $l10n,
 			IConfig $config,
-			NotificationPublisher $notificationPublisher
+			NotificationPublisher $notificationPublisher,
+			SharingBlacklist $sharingBlacklist
 	) {
 		$this->shareManager = $shareManager;
 		$this->userManager = $userManager;
@@ -109,6 +113,7 @@ class Share20OCS {
 		$this->l = $l10n;
 		$this->config = $config;
 		$this->notificationPublisher = $notificationPublisher;
+		$this->sharingBlacklist = $sharingBlacklist;
 		$this->additionalInfoField = $this->config->getAppValue('core', 'user_additional_info_field', '');
 	}
 
@@ -395,6 +400,9 @@ class Share20OCS {
 			if ($shareWith === null || !$this->groupManager->groupExists($shareWith)) {
 				$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 				return new \OC\OCS\Result(null, 404, $this->l->t('Please specify a valid group'));
+			}
+			if ($this->sharingBlacklist->isGroupBlacklisted($this->groupManager->get($shareWith))) {
+				return new \OC\OCS\Result(null, 403, $this->l->t('The group is blacklisted for sharing'));
 			}
 			$share->setSharedWith($shareWith);
 			$share->setPermissions($permissions);
