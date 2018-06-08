@@ -26,6 +26,7 @@ namespace OCA\Files_Sharing\Tests\API;
 
 use OCA\Files_Sharing\API\Share20OCS;
 use OCA\Files_Sharing\Service\NotificationPublisher;
+use OCA\Files_Sharing\SharingBlacklist;
 use OCP\Files\IRootFolder;
 use OCP\Files\NotFoundException;
 use OCP\IConfig;
@@ -34,6 +35,7 @@ use OCP\IL10N;
 use OCP\IRequest;
 use OCP\IURLGenerator;
 use OCP\IUser;
+use OCP\IGroup;
 use OCP\IUserManager;
 use OCP\Lock\LockedException;
 use OCP\Share;
@@ -80,6 +82,9 @@ class Share20OCSTest extends TestCase {
 	/** @var NotificationPublisher */
 	private $notificationPublisher;
 
+	/** @var SharingBlacklist */
+	private $sharingBlacklist;
+
 	protected function setUp() {
 		$this->shareManager = $this->getMockBuilder('OCP\Share\IManager')
 			->disableOriginalConstructor()
@@ -112,6 +117,7 @@ class Share20OCSTest extends TestCase {
 			]));
 
 		$this->notificationPublisher = $this->createMock(NotificationPublisher::class);
+		$this->sharingBlacklist = $this->createMock(SharingBlacklist::class);
 
 		$this->ocs = new Share20OCS(
 			$this->shareManager,
@@ -123,7 +129,8 @@ class Share20OCSTest extends TestCase {
 			$this->currentUser,
 			$this->l,
 			$this->config,
-			$this->notificationPublisher
+			$this->notificationPublisher,
+			$this->sharingBlacklist
 		);
 	}
 
@@ -144,12 +151,27 @@ class Share20OCSTest extends TestCase {
 				$this->l,
 				$this->config,
 				$this->notificationPublisher,
+				$this->sharingBlacklist,
 			])->setMethods(['formatShare'])
 			->getMock();
 	}
 
 	private function newShare() {
 		return \OC::$server->getShareManager()->newShare();
+	}
+
+	private function getGroupMock(array $attrs) {
+		$groupMock = $this->getMockBuilder(IGroup::class)
+			->disableOriginalConstructor()
+			->getMock();
+
+		if (isset($attrs['guid'])) {
+			$groupMock->method('getGID')->willReturn($attrs['guid']);
+		}
+		if (isset($attrs['displayname'])) {
+			$groupMock->method('getDisplayName')->willReturn($attrs['displayname']);
+		}
+		return $groupMock;
 	}
 
 	public function testDeleteShareShareNotFound() {
@@ -453,6 +475,7 @@ class Share20OCSTest extends TestCase {
 					$this->l,
 					$this->config,
 					$this->notificationPublisher,
+					$this->sharingBlacklist,
 				])->setMethods(['canAccessShare'])
 				->getMock();
 
@@ -919,6 +942,9 @@ class Share20OCSTest extends TestCase {
 				->willReturn($path);
 
 		$this->groupManager->method('groupExists')->with('validGroup')->willReturn(true);
+		$this->groupManager->method('get')
+			->with('validGroup')
+			->willReturn($this->getGroupMock(['guid' => 'gegege1', 'displayname' => 'validGroup']));
 
 		$this->shareManager->expects($this->once())
 			->method('allowGroupSharing')
@@ -940,6 +966,8 @@ class Share20OCSTest extends TestCase {
 					$share->getSharedBy() === 'currentUser';
 			}))
 			->will($this->returnArgument(0));
+
+		$this->sharingBlacklist->method('isGroupBlacklisted')->willReturn(false);
 
 		$expected = new \OC\OCS\Result();
 		$result = $ocs->createShare();
@@ -2694,7 +2722,8 @@ class Share20OCSTest extends TestCase {
 			$this->currentUser,
 			$this->l,
 			$this->config,
-			$this->notificationPublisher
+			$this->notificationPublisher,
+			$this->sharingBlacklist
 		);
 	}
 
@@ -2785,7 +2814,8 @@ class Share20OCSTest extends TestCase {
 			$this->currentUser,
 			$this->l,
 			$config,
-			$this->notificationPublisher
+			$this->notificationPublisher,
+			$this->sharingBlacklist
 		);
 
 		list($file, ) = $this->getMockFileFolder();
