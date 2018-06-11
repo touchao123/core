@@ -5,17 +5,56 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+
 ### Added
 - occ user:list now takes a list of attributes to display - [#31115](https://github.com/owncloud/core/issues/31115)
+- Added Symfony events for user preference changes - [#31266](https://github.com/owncloud/core/issues/31266)
+- Added Symfony events for public links shared by email - [#31632](https://github.com/owncloud/core/issues/31632)
+- Added Symfony events for accept and reject for local shares - [#31702](https://github.com/owncloud/core/issues/31702)
+- Added support for Imprint and Privacy Policy URLs - [#31666](https://github.com/owncloud/core/issues/31666) [#31699](https://github.com/owncloud/core/issues/31699)
+- Added HTML template for lost password email - [#31144](https://github.com/owncloud/core/issues/31144)
+- Received local shares can now trigger a notification to accept or reject them, also visible in "Shared with you" section - [#31613](https://github.com/owncloud/core/issues/31613)
+- Rejected shares can now be accepted again in the "Shared with you" section - [#31613](https://github.com/owncloud/core/issues/31613)
+- Provide original exception via logging events - [#31623](https://github.com/owncloud/core/issues/31623)
+
 ### Changed
 - Bump symfony to 3.4.8 and other pending minor bumps - [#31221](https://github.com/owncloud/core/issues/31221)
 - Bump karma from 2.0.0 to 2.0.2 in /build - [#31253](https://github.com/owncloud/core/issues/31253)
 - Bump karma-jasmine from 1.1.1 to 1.1.2 in /build - [#31378](https://github.com/owncloud/core/issues/31378)
 - Bump karma-coverage from 1.1.1 to 1.1.2 in /build - [#31380](https://github.com/owncloud/core/issues/31380)
+- Bump zendframework/zend-inputfilter from 2.8.1 to 2.8.2 - [#31431](https://github.com/owncloud/core/issues/31431)
+- Bump icewind/smb from 1.1.0 to 3.0.0 in /apps/files_external/3rdparty - [#31521](https://github.com/owncloud/core/issues/31521)
+- Bump symfony 3.4.9 to 3.4.11 - [#31571](https://github.com/owncloud/core/issues/31571)
 - Update jsdoc requirement to ~3.5.5 - [#30036](https://github.com/owncloud/core/issues/30036)
+- Removed example theme which now lives in the [theme-example repository](https://github.com/owncloud/theme-example) - [#31447](https://github.com/owncloud/core/issues/31447)
 
 ### Removed
 ### Fixed
+- Improve user-sync command help description - [#31691](https://github.com/owncloud/core/issues/31691)
+- Fix deletion of files in trashbin in some partial selection scenarios - [#31700](https://github.com/owncloud/core/issues/31700)
+- Do not load the code of disabled theme apps - [#31478](https://github.com/owncloud/core/issues/31478)
+- Fix encrypt-all command to keep shares when encrypting - [#31600](https://github.com/owncloud/core/issues/31600)
+- Proceed with encrypt-all command by enabling user-keys if no mode is selected by user - [#31612](https://github.com/owncloud/core/issues/31612)
+- Validate maximum length of a username - [#31664](https://github.com/owncloud/core/issues/31664)
+- Save timezone as given during login - [#31493](https://github.com/owncloud/core/issues/31493)
+- Fix checksum computation to not apply on read-write streams to avoid potential mismatch results - [#31619](https://github.com/owncloud/core/issues/31619)
+- Exclude uploads directory from read-only cache mask, fixes guest app chunked uploads - [#31596](https://github.com/owncloud/core/issues/31596)
+- Properly normalize paths for event, no &$magic needed - [#31689](https://github.com/owncloud/core/issues/31689)
+- Use the correct user id in login related Symfony events - [#31605](https://github.com/owncloud/core/issues/31605)
+- Fix public link dialog issue when collaborative tags app is disabled - [#31581](https://github.com/owncloud/core/issues/31581)
+- Fix updating public link share in transfer ownership command - [#31176](https://github.com/owncloud/core/issues/31176)
+- Do not set the password again if it hasn't changed - [#31370](https://github.com/owncloud/core/issues/31370)
+- Use correct l10n to translate 'password was changed' email - [#31553](https://github.com/owncloud/core/issues/31553)
+- Improve text in settings/personal App Password - [#31539](https://github.com/owncloud/core/issues/31539)
+- Fix default langage code example - [#31448](https://github.com/owncloud/core/issues/31448)
+- Fix double slash in versioning file copy events - [#31452](https://github.com/owncloud/core/issues/31452)
+- Split public password enforced capabilities based on a config - [#31499](https://github.com/owncloud/core/issues/31499)
+- Fix bogus exceptions related to missing DAV nodes after deletion - [#31479](https://github.com/owncloud/core/issues/31479)
+- Fix enabling of users by group admins in the web UI - [#31489](https://github.com/owncloud/core/issues/31489)
+- Fix AccountMapper to return an object or throw an exception - [#31445](https://github.com/owncloud/core/issues/31445)
+- Proper handling of exceptions in UserManager - [#31446](https://github.com/owncloud/core/issues/31446)
+- Properly cache non-existing user in UserManager - [#31446](https://github.com/owncloud/core/issues/31446)
+- Update verify checksums console output to flow more naturally - [#31449](https://github.com/owncloud/core/issues/31449)
 - Subadmin shouldn't be able to add users to their groups via API - [#31337](https://github.com/owncloud/core/issues/31337)
 - Remove session token creation for dav requests during loadApps - [#31428](https://github.com/owncloud/core/issues/31428)
 - Fix overflowing public share names in the share panel - [#31369](https://github.com/owncloud/core/issues/31369)
